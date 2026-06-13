@@ -67,12 +67,12 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 ::-webkit-scrollbar-thumb:hover{background:var(--text-muted)}
 
 /* ═══════════════════ CURSOR ═══════════════════ */
-.cursor{position:fixed;pointer-events:none;z-index:99999;mix-blend-mode:difference}
-.cursor-dot{width:6px;height:6px;background:#fff;border-radius:50%;transform:translate(-50%,-50%);transition:width .25s,height .25s,opacity .25s}
-.cursor-ring{width:36px;height:36px;border:1.5px solid rgba(255,255,255,.5);border-radius:50%;transform:translate(-50%,-50%);transition:width .4s var(--ease-out),height .4s var(--ease-out),border-color .3s,opacity .3s}
-.cursor.hover .cursor-ring{width:64px;height:64px;border-color:var(--accent-light)}
-.cursor.hover .cursor-dot{width:0;height:0;opacity:0}
-@media(max-width:1024px){.cursor{display:none}}
+.cursor-dot,.cursor-ring{position:fixed;top:0;left:0;pointer-events:none;z-index:99999;mix-blend-mode:difference;will-change:transform}
+.cursor-dot{width:6px;height:6px;background:#fff;border-radius:50%;transition:width .25s,height .25s,opacity .25s}
+.cursor-ring{width:36px;height:36px;border:1.5px solid rgba(255,255,255,.5);border-radius:50%;transition:width .4s var(--ease-out),height .4s var(--ease-out),border-color .3s,opacity .3s}
+.cursor-dot.hover{width:0;height:0;opacity:0}
+.cursor-ring.hover{width:64px;height:64px;border-color:var(--accent-light)}
+@media(max-width:1024px){.cursor-dot,.cursor-ring{display:none}}
 
 /* ═══════════════════ LOADER ═══════════════════ */
 .loader{position:fixed;inset:0;background:var(--bg);z-index:10000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:40px;transition:opacity 1s var(--ease-out),visibility 1s}
@@ -323,7 +323,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 <body>
 
 <div class="scroll-progress" id="scrollProgress"></div>
-<div class="cursor" id="cursor"><div class="cursor-ring" id="cursorRing"></div><div class="cursor-dot" id="cursorDot"></div></div>
+<div class="cursor-ring" id="cursorRing"></div><div class="cursor-dot" id="cursorDot"></div>
 
 <!-- LOADER -->
 <div class="loader" id="loader">
@@ -573,11 +573,16 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 
 /* ═══ CUSTOM CURSOR ═══ */
 (function(){
-  const cursor=document.getElementById('cursor'),dot=document.getElementById('cursorDot'),ring=document.getElementById('cursorRing');
-  let mx=0,my=0,rx=0,ry=0;
-  document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;dot.style.left=mx+'px';dot.style.top=my+'px'});
-  (function anim(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(anim)})();
-  document.querySelectorAll('[data-hover]').forEach(el=>{el.addEventListener('mouseenter',()=>cursor.classList.add('hover'));el.addEventListener('mouseleave',()=>cursor.classList.remove('hover'))});
+  const dot=document.getElementById('cursorDot'),ring=document.getElementById('cursorRing');
+  let mx=-100,my=-100,rx=-100,ry=-100;
+  dot.style.transform='translate(-50%,-50%) translate(-100px,-100px)';
+  ring.style.transform='translate(-50%,-50%) translate(-100px,-100px)';
+  document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY},{passive:true});
+  (function anim(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;
+    dot.style.transform=`translate(-50%,-50%) translate(${mx}px,${my}px)`;
+    ring.style.transform=`translate(-50%,-50%) translate(${rx}px,${ry}px)`;
+    requestAnimationFrame(anim)})();
+  document.querySelectorAll('[data-hover]').forEach(el=>{el.addEventListener('mouseenter',()=>{ring.classList.add('hover');dot.classList.add('hover')});el.addEventListener('mouseleave',()=>{ring.classList.remove('hover');dot.classList.remove('hover')})});
 })();
 
 /* ═══ PARTICLES ═══ */
